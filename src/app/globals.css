@@ -1,0 +1,126 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@200;300;400;500&family=Fira+Code:wght@400;500&display=swap');
+
+@import "tailwindcss";
+
+/* ============================================================
+   Base Resets
+============================================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #02030A;
+  color: #ffffff;
+  font-family: 'Inter', sans-serif;
+  font-weight: 200;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 400;
+  margin: 0;
+}
+
+img {
+  display: block;
+}
+
+img:not([style*="position: absolute"]) {
+  max-width: 100%;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* ============================================================
+   Animations
+============================================================ */
+@keyframes blur-text {
+  0%   { filter: blur(0px); opacity: 1; }
+  100% { filter: blur(4px); opacity: 0.4; }
+}
+
+/* ============================================================
+   Loading Overlay
+============================================================ */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: #02030A;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.8s ease-in-out;
+}
+
+.loading-overlay.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.loading-text {
+  display: flex;
+  gap: 12px;
+}
+
+.loading-text span {
+  display: inline-block;
+  color: #00E676;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 300;
+  font-size: 18px;
+  letter-spacing: 8px;
+  animation: blur-text 1.5s infinite linear alternate;
+}
+
+.loading-text span:nth-child(1) { animation-delay: 0.0s; }
+.loading-text span:nth-child(2) { animation-delay: 0.2s; }
+.loading-text span:nth-child(3) { animation-delay: 0.4s; }
+.loading-text span:nth-child(4) { animation-delay: 0.6s; }
+.loading-text span:nth-child(5) { animation-delay: 0.8s; }
+.loading-text span:nth-child(6) { animation-delay: 1.0s; }
+
+/* ============================================================
+   Nav Links
+============================================================ */
+.nav-link {
+  position: relative;
+  color: #dadada;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 300;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  text-decoration: none;
+  padding-bottom: 2px;
+  transition: color 0.3s ease;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: rgba(0, 230, 118, 0.5);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.nav-link:hover {
+  color: #00E676;
+}
+
+.nav-link:hover::after {
+  transform: scaleX(1);
+}
