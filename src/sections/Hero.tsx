@@ -101,7 +101,7 @@ export default function Hero() {
           <div style={{ display: 'flex', justifyContent: 'center', pointerEvents: 'auto' }}>
             <LiquidGlassButton
               onClick={() => {
-                router.push('/studio');
+                router.push('/create-agent');
               }}
             >
               {heroConfig.ctaText}

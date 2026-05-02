@@ -73,7 +73,7 @@ export default function Navigation() {
 
         {/* CTA button */}
         <button
-          onClick={() => router.push('/studio')}
+          onClick={() => router.push('/create-agent')}
           style={{
             fontFamily: "'Space Grotesk', sans-serif",
             fontWeight: 400,
