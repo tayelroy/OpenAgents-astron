@@ -157,7 +157,7 @@ export default function HowItWorks() {
         {/* CTA */}
         <div style={{ marginTop: 80, display: 'flex', gap: 20, alignItems: 'center' }}>
           <button
-            onClick={() => router.push('/studio')}
+            onClick={() => router.push('/create-agent')}
             style={{
               fontFamily: "'Space Grotesk', sans-serif",
               fontWeight: 400,
