@@ -15,8 +15,9 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useStudioStore } from '@/store/useStudioStore';
-import { Button } from '@/components/ui/button';
 import { Play } from 'lucide-react';
+import StarfieldCanvas from '@/sections/StarfieldCanvas';
+import LiquidGlassButton from '@/components/LiquidGlassButton';
 
 const initialNodes: Node[] = [
   {
@@ -54,14 +55,40 @@ export function StudioCanvas() {
   };
 
   return (
-    <div className="relative bg-black text-white" style={{ width: '100vw', height: '100vh' }}>
+    <div
+      className="relative overflow-hidden text-white"
+      style={{ width: '100vw', height: '100vh', background: '#02030A' }}
+    >
+      {/* Starfield */}
+      <div style={{ position: 'absolute', inset: 0, zIndex: 1 }}>
+        <StarfieldCanvas />
+      </div>
+
       {/* Top Navbar overlay for actions */}
-      <div className="absolute top-0 left-0 w-full p-4 flex justify-between items-center z-10 border-b border-[#333333] bg-[#000000] bg-opacity-80 backdrop-blur-md">
-        <h1 className="text-xl font-bold tracking-tight text-white">Astron Studio</h1>
-        <Button onClick={handleDeploy} className="bg-[#0070F3] hover:bg-blue-600 text-white font-medium">
-          <Play className="w-4 h-4 mr-2" />
-          Deploy
-        </Button>
+      <div
+        className="absolute top-0 left-0 w-full p-4 flex justify-between items-center z-10 border-b border-white/10"
+        style={{
+          background: 'rgba(2, 3, 10, 0.75)',
+          backdropFilter: 'blur(8px)',
+        }}
+      >
+        <h1
+          className="text-xl font-semibold tracking-tight"
+          style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+        >
+          Astron Studio
+        </h1>
+
+        <LiquidGlassButton
+          type="button"
+          onClick={handleDeploy}
+          className="inline-flex"
+        >
+          <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Play className="w-4 h-4" style={{ color: '#00E676' }} />
+            <span style={{ color: '#ffffff' }}>Deploy</span>
+          </span>
+        </LiquidGlassButton>
       </div>
 
       <ReactFlow
@@ -72,11 +99,19 @@ export function StudioCanvas() {
         onConnect={onConnect}
         fitView
         colorMode="dark"
-        className="bg-black"
+        className="bg-[#02030A]"
+        style={{ position: 'relative', zIndex: 2 }}
       >
-        <Controls className="bg-[#111111] border-[#333333] fill-white" />
-        <MiniMap nodeStrokeColor="#333333" nodeColor="#222222" maskColor="rgba(0,0,0,0.8)" className="bg-[#111111]" />
-        <Background gap={20} size={1} color="#333333" />
+        <Controls
+          className="border border-white/10 bg-[#0B1220]/50"
+        />
+        <MiniMap
+          nodeStrokeColor="#00B0FF"
+          nodeColor="#0B1220"
+          maskColor="rgba(2,3,10,0.8)"
+          className="bg-[#0B1220]/60"
+        />
+        <Background gap={20} size={1} color="rgba(0,176,255,0.25)" />
       </ReactFlow>
     </div>
   );
