@@ -31,7 +31,8 @@ export async function POST(request: Request) {
 
     // Phase 2: Data Scraping & Persona Synthesis
     console.log(`[Phase 2] Scraping tweets for @${handle}...`);
-    const tweets = await scrapeTweets(handle, 100);
+    const scrapeResult = await scrapeTweets(handle, 100);
+    const { tweets, verification } = scrapeResult;
 
     if (!tweets || tweets.length === 0) {
       return NextResponse.json({ error: 'Unable to scrape tweets. User refunded.' }, { status: 404 });
@@ -64,6 +65,7 @@ export async function POST(request: Request) {
         tokenId,
         txHash,
         persona: personaData,
+        scrape: verification,
       }
     });
   } catch (e: any) {
