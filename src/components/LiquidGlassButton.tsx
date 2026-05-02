@@ -5,10 +5,12 @@ import { useRef, useEffect, useState } from 'react';
 interface LiquidGlassButtonProps {
   children: React.ReactNode;
   onClick?: () => void;
+  type?: "button" | "submit" | "reset";
+  disabled?: boolean;
   className?: string;
 }
 
-export default function LiquidGlassButton({ children, onClick, className = '' }: LiquidGlassButtonProps) {
+export default function LiquidGlassButton({ children, onClick, type, disabled, className = '' }: LiquidGlassButtonProps) {
   const btnRef = useRef<HTMLButtonElement>(null);
   const [filterId] = useState(() => `lgb-${Math.random().toString(36).slice(2, 8)}`);
   const [mapUrl, setMapUrl] = useState('');
@@ -106,6 +108,8 @@ export default function LiquidGlassButton({ children, onClick, className = '' }:
       <button
         ref={btnRef}
         onClick={onClick}
+        type={type}
+        disabled={disabled}
         className={`liquid-glass-btn ${className}`}
         style={{
           position: 'relative',

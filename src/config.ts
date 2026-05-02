@@ -30,9 +30,10 @@ export const navigationConfig: NavigationConfig = {
   links: [
     { label: "How It Works", href: "#how-it-works" },
     { label: "Your Agents", href: "#agents" },
+    { label: "Studio (Advanced)", href: "/studio" },
     { label: "Docs", href: "#" },
   ],
-  ctaText: "Launch App",
+  ctaText: "Create Agent",
 };
 
 // ============================================================
@@ -93,7 +94,7 @@ export const howItWorksConfig: HowItWorksConfig = {
       title: "Your iNFT lands in your wallet",
       description:
         "The brain is minted as an Intelligent NFT on Base — gaslessly airdropped to you. Chat with your agent immediately. It self-learns from every conversation.",
-      tag: "ERC-721 iNFT · Base · Hermes Loop",
+      tag: "ERC-721 iNFT · Base · Self-Learning Loop",
     },
   ],
 };
@@ -289,4 +290,41 @@ export const footerConfig: FooterConfig = {
     { label: "GitHub", href: "#" },
     { label: "Status", href: "#" },
   ],
+};
+
+// ============================================================
+// Research / Alumni Archives (legacy section)
+// ============================================================
+
+export interface ResearchProject {
+  title: string;
+  discipline: string;
+  year: string;
+  image?: string;
+}
+
+export interface ResearchConfig {
+  sectionLabel: string;
+  projects: ResearchProject[];
+}
+
+export const researchConfig: ResearchConfig = {
+  sectionLabel: '',
+  projects: [],
+};
+
+// ============================================================
+// Architecture / Cinematic Vision (legacy section)
+// ============================================================
+
+export interface ArchitectureConfig {
+  sectionLabel: string;
+  title: string;
+  description?: string;
+  videoPath?: string;
+}
+
+export const architectureConfig: ArchitectureConfig = {
+  sectionLabel: '',
+  title: '',
 };
