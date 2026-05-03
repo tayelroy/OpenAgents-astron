@@ -1,40 +1,101 @@
 /**
  * 0G Storage layer + durable knowledge vault.
  *
- * - `uploadTo0G` / `fetchFrom0G` handle the 0G network interaction (mocked
- *   until the real SDK is available via npm).
- * - `putKBEntry` / `getKBEntry` now delegate to the file-based DB so records
- *   survive server restarts.
+ * - `uploadTo0G` / `fetchFrom0G` use the 0G Storage TS SDK.
+ * - `putKBEntry` / `getKBEntry` delegate to the file-based record stores so
+ *   records survive server restarts.
  */
 
-import { getAgent, saveAgent, type AgentRecord } from './db';
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
+import { getAgent, getAgentByTokenId, saveAgent, type AgentRecord } from './agent-records';
 
 // ---------------------------------------------------------------------------
-// 0G Storage (mocked — replace with real SDK when available)
+// 0G Storage (real SDK)
 // ---------------------------------------------------------------------------
 
 export async function uploadTo0G(data: unknown): Promise<string> {
   const payload = JSON.stringify(data, null, 2);
   console.log(`[0G Storage] Uploading ${Buffer.byteLength(payload, 'utf8')} bytes...`);
 
-  // Simulate network latency
-  await new Promise((resolve) => setTimeout(resolve, 1200));
+  const rpcUrl = process.env.ZERO_G_RPC_URL || 'https://evmrpc-testnet.0g.ai';
+  const indexerUrl = process.env.ZERO_G_STORAGE_INDEXER_URL || 'https://indexer-storage-testnet-turbo.0g.ai';
+  const privateKey = process.env.ZERO_G_STORAGE_PRIVATE_KEY;
 
-  // Deterministic-ish mock CID derived from content hash
-  const hash = Buffer.from(payload).toString('base64url').slice(0, 24);
-  const cid = `bafybei${hash}`;
+  if (!privateKey) {
+    throw new Error('ZERO_G_STORAGE_PRIVATE_KEY is missing');
+  }
 
-  console.log(`[0G Storage] Upload complete. CID: ${cid}`);
-  return cid;
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'astron-0g-'));
+  const filePath = path.join(tmpDir, 'payload.json');
+  fs.writeFileSync(filePath, payload, 'utf8');
+
+  try {
+    const [{ ZgFile, Indexer }, { ethers }] = await Promise.all([
+      import('@0gfoundation/0g-storage-ts-sdk'),
+      import('ethers'),
+    ]);
+
+    const provider = new ethers.JsonRpcProvider(rpcUrl);
+    const signer = new ethers.Wallet(privateKey, provider);
+    const indexer = new Indexer(indexerUrl);
+
+    const file = await ZgFile.fromFilePath(filePath);
+    await file.merkleTree();
+
+    const [tx, uploadErr] = await indexer.upload(file, rpcUrl, signer);
+    await file.close();
+
+    if (uploadErr) {
+      throw uploadErr;
+    }
+
+    const uploadResult = tx as unknown as {
+      rootHash?: string;
+      rootHashes?: string[];
+    };
+
+    const cid = uploadResult.rootHashes?.[0] || uploadResult.rootHash;
+    if (!cid) {
+      throw new Error('0G upload succeeded but did not return a CID/root hash');
+    }
+
+    console.log(`[0G Storage] Upload complete. CID: ${cid}`);
+    return cid;
+  } finally {
+    try {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    } catch {
+      // ignore temp cleanup failures
+    }
+  }
 }
 
 export async function fetchFrom0G(cid: string): Promise<unknown> {
   console.log(`[0G Storage] Fetching CID: ${cid}`);
-  await new Promise((resolve) => setTimeout(resolve, 400));
+  const rpcUrl = process.env.ZERO_G_RPC_URL || 'https://evmrpc-testnet.0g.ai';
+  const indexerUrl = process.env.ZERO_G_STORAGE_INDEXER_URL || 'https://indexer-storage-testnet-turbo.0g.ai';
 
-  // In production this would pull from the 0G network.
-  // For now, return null so callers fall back to the local DB record.
-  return null;
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'astron-0g-fetch-'));
+  const outputPath = path.join(tmpDir, 'payload.json');
+
+  try {
+    const { Indexer } = await import('@0gfoundation/0g-storage-ts-sdk');
+    const indexer = new Indexer(indexerUrl);
+    const downloadErr = await indexer.download(cid, outputPath, true);
+    if (downloadErr) {
+      throw downloadErr;
+    }
+
+    return JSON.parse(fs.readFileSync(outputPath, 'utf8'));
+  } finally {
+    try {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    } catch {
+      // ignore temp cleanup failures
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -90,8 +151,6 @@ export async function getKBEntry(id: string): Promise<AgentRecord | null> {
   // Fallback: numeric tokenId
   const numeric = parseInt(id, 10);
   if (!isNaN(numeric)) {
-    // Lazy circular import avoided — getAgentByTokenId lives in db.ts
-    const { getAgentByTokenId } = await import('./db');
     return getAgentByTokenId(numeric);
   }
 

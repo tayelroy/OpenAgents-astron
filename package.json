@@ -6,9 +6,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "compile:inft": "node scripts/compile-inft.js",
+    "deploy:inft": "node scripts/deploy-inft.js"
   },
   "dependencies": {
+    "@0gfoundation/0g-storage-ts-sdk": "^1.2.8",
     "@ai-sdk/openai": "^0.0.14",
     "@base-ui/react": "^1.4.1",
     "@xyflow/react": "^12.10.2",
@@ -16,6 +21,8 @@
     "apify-client": "^2.23.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dotenv": "^17.4.2",
+    "ethers": "^6.13.1",
     "gsap": "^3.15.0",
     "lucide-react": "^1.14.0",
     "next": "16.2.4",
@@ -31,13 +38,21 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@nomicfoundation/hardhat-chai-matchers": "^3.0.0",
+    "@nomicfoundation/hardhat-ethers": "^4.0.10",
+    "@openzeppelin/contracts": "^5.6.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/coverage-v8": "^4.1.5",
+    "chai": "^6.2.2",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
+    "hardhat": "^3.4.3",
+    "solc": "^0.8.35",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.5"
   }
 }
