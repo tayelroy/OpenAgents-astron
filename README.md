@@ -6,6 +6,15 @@ Astron is a revolutionary platform that bridges social identity and decentralize
 
 ---
 
+## 📸 Visual Overview
+
+<div align="center">
+  <img src="./public/images/explorer.png" width="45%" alt="Astron Explorer" />
+  <img src="./public/images/storage.png" width="45%" alt="Astron Storage Registry" />
+</div>
+
+---
+
 ## ✨ Key Features
 
 - 🧠 **Persona Synthesis**: Advanced scraping of target tweets (via Apify) synthesized into a high-fidelity AI personality using GPT-4o.
