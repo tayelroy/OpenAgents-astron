@@ -8,7 +8,6 @@ Astron is a revolutionary platform that bridges social identity and decentralize
 
 ## ✨ Key Features
 
-- 💳 **Coinbase x402 Payments**: Seamless 1-click generation fee payment using USDC on Base, handled via native HTTP protocol challenges.
 - 🧠 **Persona Synthesis**: Advanced scraping of target tweets (via Apify) synthesized into a high-fidelity AI personality using GPT-4o.
 - 🧊 **0G Storage**: Immutable and decentralized storage for "The Brain" (System Prompts and Memory), ensuring your agent's identity is truly yours.
 - 🪂 **Gasless Airdrops**: Zero-friction onboarding with iNFTs airdropped directly to user wallets on Base, with all gas subsidized by the platform.
@@ -22,8 +21,7 @@ Astron is a revolutionary platform that bridges social identity and decentralize
 - **AI/LLM**: [OpenAI GPT-4o](https://openai.com/), [Vercel AI SDK](https://sdk.vercel.ai/).
 - **Web3/Blockchain**: [Base](https://base.org/) (L2), [Ethers.js v6](https://docs.ethers.org/v6/), [Hardhat](https://hardhat.org/).
 - **Storage**: [0G Storage](https://0g.ai/) (Decentralized AI Storage).
-- **Payments**: [Coinbase x402](https://docs.cdp.coinbase.com/commerce/docs/x402-overview) (USDC on Base).
-- **Data Acquisition**: [Apify](https://apify.com/) (Twitter Scraper).
+- **Data Acquisition**: [X Developer API](https://developer.twitter.com/en)
 
 ---
 
