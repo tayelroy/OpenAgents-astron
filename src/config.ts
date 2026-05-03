@@ -93,8 +93,8 @@ export const howItWorksConfig: HowItWorksConfig = {
       number: "03",
       title: "Your iNFT lands in your wallet",
       description:
-        "The brain is minted as an Intelligent NFT on Base — gaslessly airdropped to you. Chat with your agent immediately. It self-learns from every conversation.",
-      tag: "ERC-721 iNFT · Base · Self-Learning Loop",
+        "The brain is minted as an Intelligent NFT on 0G Galileo — gaslessly airdroped to you. Chat with your agent immediately. It self-learns from every conversation.",
+      tag: "ERC-721 iNFT · 0G Galileo · Self-Learning Loop",
     },
   ],
 };
@@ -143,7 +143,7 @@ export const capabilitiesConfig: CapabilitiesConfig = {
       title: "iNFT Airdrop",
       slug: "immutable-archiving",
       description:
-        "Your agent minted as an ERC-721 on Base and airdropped gaslessly. Transferable, ownable, self-learning.",
+        "Your agent minted as an ERC-721 on 0G Galileo and airdropped gaslessly. Transferable, ownable, self-learning.",
       image: "images/capability-4.jpg",
     },
   ],
@@ -203,7 +203,7 @@ export const capabilityDetailConfig: CapabilityDetailConfig = {
       title: "iNFT Airdrop",
       subtitle: "Gasless deployment — your agent in your wallet.",
       paragraphs: [
-        "The Brain CID is embedded into an Intelligent NFT (iNFT) on Base, which is then airdropped directly to the creator's wallet. This iNFT is not just a collectible — it is a self-learning agent that can evolve its own on-chain memory over time.",
+        "The Brain CID is embedded into an Intelligent NFT (iNFT) on 0G Galileo, which is then airdropped directly to the creator's wallet. This iNFT is not just a collectible — it is a self-learning agent that can evolve its own on-chain memory over time.",
         "The final step completes in seconds. From payment to ownable, chatting agent — all without the user paying any gas fees.",
       ],
     },
@@ -230,7 +230,7 @@ export interface AgentsConfig {
 }
 
 export const agentsConfig: AgentsConfig = {
-  sectionLabel: "Live on Base",
+  sectionLabel: "Live on Galileo",
   title: "Agents deployed on-chain.",
   subtitle: "Each card is a real iNFT. Click to open the chat interface.",
   agents: [
@@ -283,7 +283,7 @@ export interface FooterConfig {
 
 export const footerConfig: FooterConfig = {
   heading: "Own the brain. Own the agent.",
-  tagline: "Built on Base · Stored on 0G · Paid via x402",
+  tagline: "Built on 0G Galileo · Stored on 0G · Paid via x402",
   copyright: "© 2026 Astron. All rights reserved.",
   bottomLinks: [
     { label: "Docs", href: "#" },
