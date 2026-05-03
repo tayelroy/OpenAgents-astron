@@ -6,7 +6,7 @@ Astron is a revolutionary platform that bridges social identity and decentralize
 
 ---
 
-## 📸 Visual Overview
+## 📸 Blockchain Verification on 0G galileo 
 
 <div align="center">
   <img src="./public/images/explorer.png" width="45%" alt="Astron Explorer" />
