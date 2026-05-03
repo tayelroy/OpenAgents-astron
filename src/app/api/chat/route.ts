@@ -1,9 +1,13 @@
 /**
  * POST /api/chat
  *
- * Streams a chat response using the agent's synthesized persona as the system
- * prompt. The persona is always loaded from the durable file-based store (via
- * `getKBEntry`), never from browser storage.
+ * Streams a chat response using the agent's synthesized persona + style profile
+ * as the system prompt. The persona and optional style profile are always
+ * loaded from the durable file-based store (via `getKBEntry`).
+ *
+ * When a style profile is present, its structured guidance (tone, hooks,
+ * vocabulary, few-shot examples) is injected alongside the persona narrative
+ * to produce replies that faithfully mimic the author's voice.
  *
  * Chat messages are appended to the durable log after each exchange so the
  * self-learning update loop can consume them later.
@@ -13,6 +17,7 @@ import { openai } from '@ai-sdk/openai';
 import { streamText } from 'ai';
 import { getKBEntry } from '@/lib/storage';
 import { appendChatLog } from '@/lib/db';
+import { buildStyledSystemPrompt } from '@/lib/style-profile';
 
 export const maxDuration = 30;
 
@@ -32,7 +37,15 @@ export async function POST(req: Request) {
     const entry = await getKBEntry(tokenId);
     if (entry?.persona) {
       const p = entry.persona;
-      systemPrompt = typeof p === 'string' ? p : (p.persona ?? systemPrompt);
+      const personaNarrative = typeof p === 'string' ? p : (p.persona ?? null);
+      if (personaNarrative) {
+        // If a style profile is attached, combine it with the persona narrative.
+        if (p.styleProfile && Array.isArray(p.styleProfile.fewShotExamples)) {
+          systemPrompt = buildStyledSystemPrompt(personaNarrative, p.styleProfile);
+        } else {
+          systemPrompt = personaNarrative;
+        }
+      }
       resolvedHandle = entry.handle ?? null;
     }
 
@@ -40,6 +53,13 @@ export async function POST(req: Request) {
       `[chat] Loaded brain for tokenId=${tokenId}` +
         (resolvedHandle ? ` (@${resolvedHandle})` : ' (fallback persona)')
     );
+
+    // Log whether style guidance was applied (useful for debugging).
+    if (typeof entry?.persona === 'object' && entry.persona !== null && entry.persona.styleProfile) {
+      const sp = entry.persona.styleProfile;
+      const exampleCount = Array.isArray(sp?.fewShotExamples) ? sp.fewShotExamples.length : 0;
+      console.log(`[chat] Style guidance active — ${exampleCount} few-shot examples embedded.`);
+    }
 
     // ------------------------------------------------------------------
     // Stream response

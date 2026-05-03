@@ -3,7 +3,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bot, MessageSquare, PlusCircle, Wallet, LogOut, RefreshCw } from "lucide-react";
 
 type AgentSummary = {
   handle: string;
@@ -103,34 +102,6 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
     >
       {/* Sidebar */}
       <aside className="w-72 flex flex-col flex-shrink-0 border-r border-white/10 bg-[rgba(2,3,10,0.78)] backdrop-blur-2xl shadow-[inset_-1px_0_0_rgba(255,255,255,0.04)]">
-        {/* Header */}
-        <div className="p-4 border-b border-white/10 bg-white/[0.02]">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[#00E676]/20 bg-[#00E676]/10 shadow-[0_0_28px_rgba(0,230,118,0.08)]">
-                <Bot className="w-5 h-5 text-[#00E676]" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[10px] uppercase tracking-[0.3em] text-white/30">Agent Vault</p>
-                <h3 className="truncate text-sm font-medium text-white/90" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                  My Agents
-                </h3>
-              </div>
-            </div>
-            <button
-              onClick={() => loadAgents(walletAddress)}
-              disabled={loadingAgents}
-              title="Refresh agent list"
-              className="rounded-full border border-white/10 bg-white/[0.03] p-2 text-white/40 transition-all hover:border-white/20 hover:bg-white/[0.06] hover:text-white/80"
-            >
-              <RefreshCw className={`w-4 h-4 ${loadingAgents ? "animate-spin text-[#00E676]" : ""}`} />
-            </button>
-            <Link href="/create-agent" title="Create new agent" className="rounded-full border border-white/10 bg-white/[0.03] p-2 transition-all hover:border-[#00E676]/30 hover:bg-[#00E676]/10">
-              <PlusCircle className="w-4 h-4 text-white/50 transition-colors hover:text-[#00E676]" />
-            </Link>
-          </div>
-        </div>
-
         {/* Agent list */}
         <div className="flex-1 overflow-y-auto p-3 space-y-2">
           {agents.length === 0 && !loadingAgents && (
@@ -167,59 +138,14 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
                     ? "border-[#00E676]/25 bg-[#00E676]/10 text-[#00E676]"
                     : "border-white/10 bg-white/[0.03] text-white/55 group-hover:border-white/15 group-hover:bg-white/[0.05]"
                 }`}>
-                  <MessageSquare className="h-4 w-4" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="truncate text-sm font-medium" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                      @{agent.handle}
-                    </p>
-                    <span className={`text-[10px] uppercase tracking-[0.24em] ${isActive ? "text-[#00E676]" : "text-white/25"}`}>
-                      #{agent.tokenId}
-                    </span>
-                  </div>
+
                   <div className="mt-1 h-px w-full bg-white/[0.06]" />
                 </div>
               </Link>
             );
           })}
-        </div>
-
-        {/* Wallet footer */}
-        <div className="p-4 border-t border-white/10 bg-white/[0.02]">
-          {walletAddress ? (
-            <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-2">
-              <div className="flex items-center gap-2 min-w-0">
-                <div
-                  style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: "50%",
-                    background: "#00E676",
-                    boxShadow: "0 0 8px rgba(0,230,118,0.8)",
-                    flexShrink: 0,
-                  }}
-                />
-                <span className="text-xs text-white/55 font-mono truncate">{shortAddr}</span>
-              </div>
-              <button
-                onClick={disconnectWallet}
-                title="Disconnect wallet"
-                className="rounded-full border border-white/10 bg-white/[0.03] p-2 text-white/30 transition-all hover:border-white/20 hover:bg-white/[0.06] hover:text-white/70"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={connectWallet}
-              disabled={walletConnecting}
-              className="w-full flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-3 text-xs text-white/60 transition-all hover:border-[#00E676]/30 hover:bg-[#00E676]/10 hover:text-[#00E676]"
-            >
-              <Wallet className="w-4 h-4" />
-              {walletConnecting ? "Connecting…" : "Connect Wallet"}
-            </button>
-          )}
         </div>
       </aside>
 
