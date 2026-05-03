@@ -12,7 +12,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getAgentByTokenId } from '@/lib/db';
+import { getAgent, getAgentByTokenId } from '@/lib/agent-records';
 
 export async function GET(
   req: NextRequest,
@@ -32,7 +32,6 @@ export async function GET(
   const numericTokenId = parseInt(tokenId, 10);
   if (isNaN(numericTokenId)) {
     // tokenId might be a handle string — look up by handle
-    const { getAgent } = await import('@/lib/db');
     const agent = getAgent(tokenId);
     if (!agent) {
       return NextResponse.json({ verified: false, ownerAddress: null, handle: null });
@@ -56,11 +55,18 @@ export async function GET(
   ) {
     try {
       const { createPublicClient, http, parseAbi } = await import('viem');
-      const { baseSepolia } = await import('viem/chains');
 
       const viemClient = createPublicClient({
-        chain: baseSepolia,
-        transport: http(process.env.BASE_RPC_URL || 'https://sepolia.base.org'),
+        chain: {
+          id: Number(process.env.ZERO_G_CHAIN_ID || 16601),
+          name: '0G Testnet',
+          nativeCurrency: { name: '0G', symbol: '0G', decimals: 18 },
+          rpcUrls: {
+            default: { http: [process.env.ZERO_G_CHAIN_RPC_URL || 'https://evmrpc-testnet.0g.ai'] },
+            public: { http: [process.env.ZERO_G_CHAIN_RPC_URL || 'https://evmrpc-testnet.0g.ai'] },
+          },
+        },
+        transport: http(process.env.ZERO_G_CHAIN_RPC_URL || 'https://evmrpc-testnet.0g.ai'),
       });
 
       const abi = parseAbi(['function ownerOf(uint256 tokenId) view returns (address)']);

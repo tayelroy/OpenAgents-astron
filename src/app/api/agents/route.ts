@@ -6,7 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllAgents, getAgentsByOwner } from '@/lib/db';
+import { getAllAgents, getAgentsByOwner } from '@/lib/agent-records';
 
 export async function GET(req: NextRequest) {
   const owner = req.nextUrl.searchParams.get('owner');
