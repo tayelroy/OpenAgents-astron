@@ -1,9 +1,26 @@
 import OpenAI from 'openai';
 import type { PersonaPayload } from './db';
+import { extractStyleProfile } from './style-profile';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || '',
-});
+function getPersonaClient() {
+  const zeroGBaseUrl = process.env.ZERO_G_COMPUTE_BASE_URL;
+  const zeroGApiKey = process.env.ZERO_G_COMPUTE_API_KEY;
+
+  if (zeroGBaseUrl && zeroGApiKey) {
+    return new OpenAI({
+      apiKey: zeroGApiKey,
+      baseURL: zeroGBaseUrl,
+    });
+  }
+
+  if (process.env.OPENAI_API_KEY) {
+    return new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+  }
+
+  throw new Error('Either ZERO_G_COMPUTE_BASE_URL + ZERO_G_COMPUTE_API_KEY or OPENAI_API_KEY must be set');
+}
 
 // ---------------------------------------------------------------------------
 // Persona schema validation
@@ -43,14 +60,7 @@ export async function synthesizePersona(
   handle: string,
   tweets: { text: string }[]
 ): Promise<PersonaPayload> {
-  if (!process.env.OPENAI_API_KEY) {
-    console.warn('[Persona] OPENAI_API_KEY missing — returning validated mock persona.');
-    return validatePersona({
-      persona: `You are an AI clone of @${handle}. You communicate with authority on Web3, decentralized infrastructure, and on-chain AI. Mirror the tone and reasoning style evident in the provided tweets.`,
-      tone: 'Confident, analytical, forward-looking',
-      topics: ['Web3', 'On-chain AI', 'Crypto'],
-    });
-  }
+  const openai = getPersonaClient();
 
   // Deduplicate and trim tweet text to stay under token limits
   const seen = new Set<string>();
@@ -78,15 +88,23 @@ Output VALID JSON in exactly this schema (no extra keys, no markdown fences):
   "topics": ["string"]
 }`;
 
-  const response = await openai.chat.completions.create({
-    model: 'gpt-4o',
-    response_format: { type: 'json_object' },
-    temperature: 0.3,
-    messages: [
-      { role: 'system', content: prompt },
-      { role: 'user', content: `Tweets:\n\n${tweetText}` },
-    ],
-  });
+  // Run persona synthesis and style extraction in parallel to save latency.
+  const [response, styleProfile] = await Promise.all([
+    openai.chat.completions.create({
+      model: process.env.ZERO_G_COMPUTE_MODEL || process.env.OPENAI_MODEL || 'gpt-5.4-mini',
+      response_format: { type: 'json_object' },
+      temperature: 0.3,
+      messages: [
+        { role: 'system', content: prompt },
+        { role: 'user', content: `Tweets:\n\n${tweetText}` },
+      ],
+    }),
+    extractStyleProfile(handle, tweets).catch((err) => {
+      // Style extraction is best-effort — log but don't fail persona synthesis.
+      console.warn(`[persona] Style profile extraction failed (non-fatal): ${err?.message}`);
+      return undefined;
+    }),
+  ]);
 
   const content = response.choices[0]?.message?.content;
   if (!content) throw new Error('No content returned from LLM during persona synthesis');
@@ -99,7 +117,14 @@ Output VALID JSON in exactly this schema (no extra keys, no markdown fences):
   }
 
   // Strict schema validation — throws if shape is wrong
-  return validatePersona(parsed);
+  const persona = validatePersona(parsed);
+
+  // Attach the style profile so it travels with the persona through the pipeline.
+  if (styleProfile) {
+    persona.styleProfile = styleProfile;
+  }
+
+  return persona;
 }
 
 // Alias kept for backward compatibility

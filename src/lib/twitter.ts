@@ -8,90 +8,95 @@ export type TweetRecord = {
 export type TweetScrapeResult = {
   tweets: TweetRecord[];
   verification: {
-    source: 'apify' | 'mock';
+    source: 'twitter-api';
     ok: boolean;
     handle: string;
     limit: number;
     itemCount: number;
-    actor?: string;
-    datasetId?: string;
-    runId?: string;
+    endpoint?: string;
+    nextToken?: string;
     error?: string;
   };
 };
 
 export async function scrapeTweets(handle: string, limit: number = 100): Promise<TweetScrapeResult> {
-  // Dynamic import to prevent Turbopack from resolving Node.js built-ins at bundle time
-  const { ApifyClient } = await import('apify-client');
-  const client = new ApifyClient({
-      token: process.env.APIFY_API_TOKEN || '',
-  });
-  if (!process.env.APIFY_API_TOKEN) {
-    console.warn('APIFY_API_TOKEN is missing. Returning mock tweet data.');
-    const tweets = mockTweets(handle);
+  const bearerToken = process.env.X_BEARER_TOKEN || process.env.TWITTER_BEARER_TOKEN;
+  if (!bearerToken) {
+    throw new Error('X_BEARER_TOKEN (or TWITTER_BEARER_TOKEN) is missing');
+  }
+
+  try {
+    const endpoint = new URL('https://api.twitter.com/2/tweets/search/all');
+    endpoint.searchParams.set('query', `from:${handle} -is:retweet -is:reply`);
+    endpoint.searchParams.set('max_results', '100');
+    endpoint.searchParams.set('tweet.fields', 'created_at,public_metrics');
+
+    const tweets: TweetRecord[] = [];
+    let nextToken: string | undefined;
+
+    while (tweets.length < limit) {
+      const pageUrl = new URL(endpoint.toString());
+      if (nextToken) {
+        pageUrl.searchParams.set('next_token', nextToken);
+      }
+
+      const response = await fetch(pageUrl.toString(), {
+        headers: {
+          Authorization: `Bearer ${bearerToken}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const body = await response.text().catch(() => '');
+        throw new Error(
+          `Twitter API request failed (${response.status}): ${body || response.statusText}`
+        );
+      }
+
+      const payload = await response.json();
+      const items = Array.isArray(payload?.data) ? payload.data : [];
+
+      for (const item of items) {
+        const referencedTweets = Array.isArray(item?.referenced_tweets) ? item.referenced_tweets : [];
+        const isRetweet = referencedTweets.some((ref: any) => ref?.type === 'retweeted');
+        const isReply = referencedTweets.some((ref: any) => ref?.type === 'replied_to');
+        if (isRetweet || isReply) {
+          continue;
+        }
+
+        tweets.push({
+          text: item.text,
+          createdAt: item.created_at,
+          retweets: item.public_metrics?.retweet_count,
+          likes: item.public_metrics?.like_count,
+        });
+
+        if (tweets.length >= limit) {
+          break;
+        }
+      }
+
+      nextToken = payload?.meta?.next_token;
+      if (!nextToken || items.length === 0) {
+        break;
+      }
+    }
+
     return {
       tweets,
       verification: {
-        source: 'mock',
+        source: 'twitter-api',
         ok: true,
         handle,
         limit,
         itemCount: tweets.length,
-      },
-    };
-  }
-
-  try {
-    // Calling the configured Apify actor for Twitter scraping
-    const actorId = '61RPP7dywgiy0JPD0';
-    const run = await client.actor(actorId).call({
-      profiles: [handle],
-      tweetsDesired: limit,
-      addUserInfo: true,
-    });
-
-    const { items } = await client.dataset(run.defaultDatasetId).listItems();
-    const tweets = items.map((item: any) => ({
-      text: item.full_text || item.text,
-      createdAt: item.created_at,
-      retweets: item.retweet_count,
-      likes: item.favorite_count,
-    }));
-
-    return {
-      tweets,
-      verification: {
-        source: 'apify',
-        ok: true,
-        handle,
-        limit,
-        itemCount: items.length,
-        actor: actorId,
-        datasetId: run.defaultDatasetId,
-        runId: run.id,
+        endpoint: 'https://api.twitter.com/2/tweets/search/all',
+        nextToken,
       },
     };
   } catch (error) {
     console.error('Error scraping tweets:', error);
-    const mock = mockTweets(handle);
-    return {
-      tweets: mock,
-      verification: {
-        source: 'mock',
-        ok: false,
-        handle,
-        limit,
-        itemCount: mock.length,
-        error: error instanceof Error ? error.message : 'Failed to scrape tweets from Apify',
-      },
-    };
+    throw new Error(error instanceof Error ? error.message : 'Failed to scrape tweets from Twitter API');
   }
-}
-
-function mockTweets(handle: string): TweetRecord[] {
-  return [
-    { text: `Just deployed a new protocol. Very bullish on on-chain AI.`, createdAt: new Date().toISOString() },
-    { text: `Thinking about the hermes architecture... it changes everything.`, createdAt: new Date().toISOString() },
-    { text: `If you aren't building in Web3 right now, what are you even doing?`, createdAt: new Date().toISOString() },
-  ];
 }

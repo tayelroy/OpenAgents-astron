@@ -13,7 +13,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Twitter handle is required' }, { status: 400 });
     }
 
-    // Phase 1 MVP Stub: Simulate x402 payment challenge
+    // Phase 1: Require payment verification before onchain minting
     if (!paymentVerified) {
       // Typically we would respond with 402 Payment Required and the x402 header
       return new NextResponse(
@@ -41,33 +41,21 @@ export async function POST(request: Request) {
     console.log(`[Phase 2] Synthesizing persona for @${handle} from ${tweets.length} tweets...`);
     const personaData = await synthesizePersona(handle, tweets);
 
-    // Phase 3: 0G Immutability & Base iNFT Minting
+    // Phase 3: 0G Immutability & 0G iNFT Minting
     console.log(`[Phase 3] Uploading Persona System Prompt to 0G Storage...`);
     const cid = await uploadTo0G(personaData);
 
-    let tokenId = 1; // Default
-    let txHash = '0x0';
-    
-    // Only mint if userAddress is provided
-    if (userAddress) {
-      console.log(`[Phase 3] Minting iNFT to ${userAddress} on Base...`);
-      const mintResult = await mintAgentNFT(userAddress, cid);
-      tokenId = mintResult.tokenId;
-      txHash = mintResult.txHash;
+    if (!userAddress || typeof userAddress !== 'string' || !userAddress.startsWith('0x')) {
+      return NextResponse.json(
+        { error: 'A valid wallet address is required to mint the iNFT onchain' },
+        { status: 400 }
+      );
     }
 
-    return NextResponse.json({
-      success: true,
-      message: 'Agent generated and minted successfully',
-      agent: {
-        handle,
-        cid,
-        tokenId,
-        txHash,
-        persona: personaData,
-        scrape: verification,
-      }
-    });
+    return NextResponse.json(
+      { error: 'Server-side minting is not supported. Please use /api/create-agent which orchestrates the full client-side mint flow.' },
+      { status: 501 }
+    );
   } catch (e: any) {
     console.error('Generation Error:', e);
     return NextResponse.json({ error: e.message || 'Internal Server Error' }, { status: 500 });
